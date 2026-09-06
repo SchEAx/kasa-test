@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KasaFlow | Araç Kabul</title>
+  <script>
+    document.documentElement.dataset.kasaTheme = localStorage.getItem("kasaflow_theme") || "pembe-seker";
+    if (new URLSearchParams(location.search).get("embed") === "kasa") document.documentElement.dataset.kasaEmbed = "true";
+  </script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="/cashier-themes.css?v=2.3" />
+  <link rel="manifest" href="./manifest.json" />
+  <meta name="theme-color" content="#09090b" />
+  <link rel="apple-touch-icon" href="/logo.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Garage İstanbul" />
+  <style>
+    body { margin: 0; font-family: Arial, sans-serif; background: #09090b; }
+    canvas { touch-action: none; }
+    input[type="checkbox"] {
+      accent-color: #22c55e;
+      flex: 0 0 auto;
+      margin: 0;
+      vertical-align: top;
+}
+    .garage-module-tabs { display:flex; gap:8px; width:100%; overflow-x:auto; padding:4px; scrollbar-width:thin; }
+    .garage-module-tabs > button { flex:0 0 auto; white-space:nowrap; min-height:42px; }
+    .consent-check-row { display:grid !important; grid-template-columns:20px minmax(0,1fr); align-items:start; gap:12px; }
+    .consent-check-row input { width:20px !important; height:20px !important; margin-top:2px !important; }
+    .montaj-control-choice { min-height:42px; display:flex; align-items:center; justify-content:center; }
+    textarea, input, select { outline: none; }
+
+    /* Gün sonu tarih kutusu: tarayıcının koyu takvim ikonunu gizle */
+    input.gunsonu-date-input::-webkit-calendar-picker-indicator {
+      opacity: 0;
+      display: none;
+      -webkit-appearance: none;
+    }
+    input.gunsonu-date-input {
+      color-scheme: dark;
+      cursor: pointer;
+    }
+    @media print {
+      @page { size: A5 portrait; margin: 8mm; }
+      html, body { background: #fff !important; }
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+  </style>
+</head>
+<body>
+  <div class="powered-badge fixed top-2 right-3 z-[9999] rounded-2xl border border-amber-400/40 bg-black/50 px-3 py-2 text-[11px] font-bold tracking-wide text-white shadow-2xl backdrop-blur-xl print:hidden">
+    ⚡ Powered By <span class="text-white">GPT</span> & <span class="text-red-400">SchEAx</span>
+  </div>
+  <div id="app"></div>
+
+<script src="./js/app-migration-v2.3.js"></script>
+</body>
+</html>

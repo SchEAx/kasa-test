@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="tr" data-kasa-theme="pembe-seker">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#db2777" />
+  <title>KasaFlow | Garage İstanbul</title>
+  <script>document.documentElement.dataset.kasaTheme = localStorage.getItem("kasaflow_theme") || "pembe-seker";</script>
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="/logo.png" />
+  <link rel="stylesheet" href="/cashier-themes.css?v=2.3" />
+  <link rel="stylesheet" href="/style.css?v=2.3" />
+</head>
+<body>
+  <div style="position:fixed;left:10px;bottom:10px;z-index:999999;background:#111827;color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:6px 10px;font:800 10px Arial;letter-spacing:.04em;pointer-events:none">MIGRATION TEST · PostgreSQL/JWT</div>
+  <div id="globalLoginOverlay" class="global-login-overlay">
+    <form id="globalLoginForm" class="global-login-card">
+      <div class="login-sparkles" aria-hidden="true">✦ ♡ ✦</div>
+      <img src="/logo.png" alt="Garage İstanbul" />
+      <p class="eyebrow">KASAFLOW GÜVENLİ GİRİŞ</p>
+      <h1>Hoş geldin 🌸</h1>
+      <p class="login-copy">Mevcut Garage İstanbul personel hesabınla giriş yap.</p>
+      <label>Kullanıcı adı<input id="globalLoginUsername" autocomplete="username" placeholder="Kullanıcı adın" /></label>
+      <label>Şifre<input id="globalLoginPassword" type="password" autocomplete="current-password" placeholder="Şifren" /></label>
+      <button id="globalLoginButton" type="submit">Giriş Yap</button>
+      <p id="globalLoginError" class="login-error"></p>
+    </form>
+  </div>
+
+  <div id="globalAppShell" class="app-shell auth-locked">
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="/logo.png" alt="Garage İstanbul" />
+        <div><strong>KasaFlow</strong><span>Kasa & Operasyon</span></div>
+      </div>
+
+      <nav class="module-nav" aria-label="KasaFlow bölümleri">
+        <button class="module-button active" data-view="hizli-kayit"><span>⚡</span><b>Hızlı Kayıt</b></button>
+        <button class="module-button" data-view="kayitlar"><span>📋</span><b>Kayıtlar</b></button>
+        <button class="module-button" data-view="gun-sonu"><span>📊</span><b>Gün Sonu</b></button>
+        <button class="module-button" data-view="siparis"><span>🛍️</span><b>Sipariş</b></button>
+        <button class="module-button" data-view="garanti"><span>🛡️</span><b>Garanti</b></button>
+        <button class="module-button" data-view="avans-maas"><span>💸</span><b>Avans & Maaş</b><i id="salaryNavBadge" class="nav-badge hidden">0</i></button>
+        <button class="module-button" data-view="ayarlar"><span>🎨</span><b>Ayarlar</b></button>
+      </nav>
+
+      <div class="sidebar-footer"><span>KasaFlow Migration 2.3</span><small>Garage İstanbul · SchEAx & GPT</small></div>
+    </aside>
+
+    <main class="workspace">
+      <header class="workspace-header">
+        <div><p class="eyebrow">GARAGE İSTANBUL · KASA</p><h1 id="viewTitle">Hızlı Kayıt</h1></div>
+        <div class="header-actions">
+          <div id="globalUserPill" class="global-user-pill hidden"><span>🌷</span><div><strong id="globalUserName">-</strong><small id="globalUserRole">-</small></div></div>
+          <button id="notificationButton" class="icon-button" type="button" title="Avans & Maaş migration sonrası etkinleşecek">🔔 <span>Bildirim</span></button>
+          <button id="refreshViewButton" class="icon-button" type="button" title="Ekranı yenile">↻ <span>Yenile</span></button>
+          <button id="globalLogoutButton" class="icon-button" type="button" title="Oturumu kapat">⇥ <span>Çıkış</span></button>
+        </div>
+      </header>
+
+      <section id="salaryAlert" class="salary-alert hidden" role="alert">
+        <div><strong>⏰ Maaş hatırlatması</strong><span id="salaryAlertText"></span></div>
+        <button type="button" data-open-payroll>Maaş ekranına git</button>
+      </section>
+
+      <section id="moduleViewport" class="module-viewport">
+        <div id="moduleLoading" class="module-loading"><span></span>Ekran hazırlanıyor…</div>
+        <iframe id="moduleFrame" title="KasaFlow çalışma ekranı" allow="camera; microphone; clipboard-read; clipboard-write" loading="eager"></iframe>
+      </section>
+
+      <section id="settingsView" class="settings-view hidden">
+        <section id="staffManagementPanel" class="staff-management-panel hidden">
+          <div class="staff-management-header">
+            <div><p class="eyebrow">PERSONEL & MODÜL YETKİLERİ</p><h2>Personel Kayıt Merkezi</h2><p>Yeni giriş hesabı oluştur; her personele görebileceği KasaFlow sekmelerini ayrı ayrı ver.</p></div>
+            <div class="staff-header-actions"><button id="reloadStaffManagementBtn" type="button" class="settings-button secondary">↻ Yenile</button><button id="addStaffManagementBtn" type="button" class="settings-button">＋ Personel Ekle</button></div>
+          </div>
+          <div id="staffManagementMessage" class="staff-management-message hidden" role="status" aria-live="polite"></div>
+          <div id="staffManagementList" class="staff-management-list"><p class="staff-empty">Personeller yükleniyor…</p></div>
+          <div class="staff-save-bar"><p>Personeli pasife almak geçmiş stok ve araç kayıtlarını silmez.</p><button id="saveStaffManagementBtn" type="button" class="settings-button save">Personelleri Kaydet</button></div>
+        </section>
+
+        <div class="settings-hero">
+          <div><p class="eyebrow">RENKLERİ SEN SEÇ 🌈</p><h2>KasaFlow’un havasını değiştir</h2><p>Seçtiğin tema menüye, araç kabul ekranlarına ve Avans & Maaş bölümüne birlikte uygulanır.</p></div>
+          <div class="settings-mark">✨</div>
+        </div>
+        <div class="theme-grid" role="list">
+          <button class="theme-card" data-theme-choice="pembe-seker" role="listitem"><span class="swatches"><i style="--swatch:#f472b6"></i><i style="--swatch:#c084fc"></i><i style="--swatch:#6d214f"></i></span><strong>Pembe Şeker</strong><small>Pastel pembe · mor · tatlı</small><em>Varsayılan</em></button>
+          <button class="theme-card" data-theme-choice="sakiz" role="listitem"><span class="swatches"><i style="--swatch:#ff5da2"></i><i style="--swatch:#45e0d0"></i><i style="--swatch:#ffe06b"></i></span><strong>Sakız Pop</strong><small>Pembe · turkuaz · enerjik</small></button>
+          <button class="theme-card" data-theme-choice="lavanta" role="listitem"><span class="swatches"><i style="--swatch:#c084fc"></i><i style="--swatch:#f9a8d4"></i><i style="--swatch:#6c49a5"></i></span><strong>Lavanta Rüyası</strong><small>Lila · pembe · zarif</small></button>
+          <button class="theme-card" data-theme-choice="tropik" role="listitem"><span class="swatches"><i style="--swatch:#fb7185"></i><i style="--swatch:#34d399"></i><i style="--swatch:#0f766e"></i></span><strong>Tropik Bahçe</strong><small>Mercan · yeşil · ferah</small></button>
+          <button class="theme-card" data-theme-choice="mandalina" role="listitem"><span class="swatches"><i style="--swatch:#fb923c"></i><i style="--swatch:#f472b6"></i><i style="--swatch:#a53865"></i></span><strong>Mandalina</strong><small>Turuncu · fuşya · sıcak</small></button>
+          <button class="theme-card" data-theme-choice="gece-pembe" role="listitem"><span class="swatches"><i style="--swatch:#ec4899"></i><i style="--swatch:#60a5fa"></i><i style="--swatch:#111827"></i></span><strong>Gece Pembesi</strong><small>Fuşya · mavi · koyu</small></button>
+        </div>
+        <p class="settings-note">Tema seçimi bu cihazda otomatik kaydedilir. Yeniden giriş yaptığında aynı görünüm açılır.</p>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast" class="toast" aria-live="polite"></div>
+  <script src="/app-migration-v2.3.js"></script>
+</body>
+</html>

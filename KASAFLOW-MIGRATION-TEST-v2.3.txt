@@ -1,0 +1,16 @@
+KasaFlow Migration Test v2.3
+
+Ana KasaFlow çekirdeği:
+- Auth: PostgreSQL/JWT API
+- records: /api/kasaflow/records
+- belge no: /api/kasaflow/document-number
+- ödeme geçmişi: /api/kasaflow/payment-history
+- gider/şube/gün sonu: /api/kasaflow/*
+- araç/imza/son kontrol medya: VPS /uploads/kasaflow
+- depo talebi senkronu backend transaction içinde
+- Montaj Bitti stok kesin çıkışı backend endpointi
+- Admin personel yönetimi /api/users endpointleri
+
+Migration testte service worker kaydı kapalıdır; eski cache temizlenir.
+Avans & Maaş modülü ayrı migration turuna bırakılmıştır ve kendi eski veri servisini kullanmaya devam eder.
+Google Sheets arka plan yedek/proxy kodu korunmuştur.

@@ -1,0 +1,138 @@
+:root,
+html[data-kasa-theme="pembe-seker"] {
+  --bg: #1b1020;
+  --panel: #2b172f;
+  --panel2: #3b1d3d;
+  --line: #71345f;
+  --text: #fff8fd;
+  --muted: #dcb9d2;
+  --accent: #f472b6;
+  --accent2: #c084fc;
+  --accent-ink: #3a0827;
+  --success: #55d6a7;
+  --warning: #ffd166;
+  --danger: #fb7185;
+  --glow: rgba(244, 114, 182, .28);
+  --hero: linear-gradient(135deg, #6d214f, #43265e 58%, #25336a);
+  --sidebar: linear-gradient(180deg, #3a1738, #1a1020);
+}
+
+html[data-kasa-theme="sakiz"] {
+  --bg: #0c2630;
+  --panel: #123b46;
+  --panel2: #174f59;
+  --line: #2f7780;
+  --text: #f3feff;
+  --muted: #add8da;
+  --accent: #ff5da2;
+  --accent2: #45e0d0;
+  --accent-ink: #301020;
+  --success: #55e6b1;
+  --warning: #ffe06b;
+  --danger: #ff7189;
+  --glow: rgba(69, 224, 208, .26);
+  --hero: linear-gradient(135deg, #d9367b, #177b83 65%, #154757);
+  --sidebar: linear-gradient(180deg, #123f4b, #0b222b);
+}
+
+html[data-kasa-theme="lavanta"] {
+  --bg: #171329;
+  --panel: #272144;
+  --panel2: #382d5c;
+  --line: #65549a;
+  --text: #faf8ff;
+  --muted: #c9c0e5;
+  --accent: #c084fc;
+  --accent2: #f9a8d4;
+  --accent-ink: #211038;
+  --success: #70dfbb;
+  --warning: #ffd77c;
+  --danger: #ff8197;
+  --glow: rgba(192, 132, 252, .28);
+  --hero: linear-gradient(135deg, #6c49a5, #a33d7c 72%, #473e8f);
+  --sidebar: linear-gradient(180deg, #302754, #171329);
+}
+
+html[data-kasa-theme="tropik"] {
+  --bg: #092b28;
+  --panel: #10413b;
+  --panel2: #17564d;
+  --line: #2a7b6e;
+  --text: #f2fff9;
+  --muted: #a9d9cb;
+  --accent: #fb7185;
+  --accent2: #34d399;
+  --accent-ink: #351013;
+  --success: #5ee3a7;
+  --warning: #ffd166;
+  --danger: #ff728b;
+  --glow: rgba(52, 211, 153, .25);
+  --hero: linear-gradient(135deg, #d14b60, #127666 60%, #0f4f5d);
+  --sidebar: linear-gradient(180deg, #114a42, #092725);
+}
+
+html[data-kasa-theme="mandalina"] {
+  --bg: #2a1711;
+  --panel: #43251b;
+  --panel2: #5a3323;
+  --line: #8a583a;
+  --text: #fffaf4;
+  --muted: #e3c4ad;
+  --accent: #fb923c;
+  --accent2: #f472b6;
+  --accent-ink: #351508;
+  --success: #73dda7;
+  --warning: #ffd166;
+  --danger: #ff7186;
+  --glow: rgba(251, 146, 60, .27);
+  --hero: linear-gradient(135deg, #c55329, #a53865 62%, #61335f);
+  --sidebar: linear-gradient(180deg, #502c20, #28160f);
+}
+
+html[data-kasa-theme="gece-pembe"] {
+  --bg: #080b17;
+  --panel: #11172a;
+  --panel2: #1b2540;
+  --line: #33476d;
+  --text: #f7f9ff;
+  --muted: #aab7d3;
+  --accent: #ec4899;
+  --accent2: #60a5fa;
+  --accent-ink: #250815;
+  --success: #4adeb0;
+  --warning: #ffd166;
+  --danger: #fb7185;
+  --glow: rgba(236, 72, 153, .25);
+  --hero: linear-gradient(135deg, #96165d, #243e7e 65%, #111a3e);
+  --sidebar: linear-gradient(180deg, #17203a, #080b17);
+}
+
+/* Araç kabul ve Avans & Maaş iframe'leri de seçilen temayı takip eder. */
+html[data-kasa-theme] body {
+  background: radial-gradient(circle at 92% 0, var(--glow), transparent 30%), var(--bg) !important;
+  color: var(--text) !important;
+}
+
+html[data-kasa-embed="true"] .powered-badge { display: none !important; }
+html[data-kasa-theme] .bg-zinc-950 { background-color: color-mix(in srgb, var(--bg) 94%, black) !important; }
+html[data-kasa-theme] .bg-zinc-900 { background-color: var(--panel) !important; }
+html[data-kasa-theme] .bg-zinc-800 { background-color: var(--panel2) !important; }
+html[data-kasa-theme] .bg-zinc-700 { background-color: color-mix(in srgb, var(--panel2) 72%, var(--accent)) !important; }
+html[data-kasa-theme] .border-white\/10 { border-color: var(--line) !important; }
+html[data-kasa-theme] .text-zinc-300,
+html[data-kasa-theme] .text-zinc-400,
+html[data-kasa-theme] .text-zinc-500 { color: var(--muted) !important; }
+html[data-kasa-theme] input,
+html[data-kasa-theme] textarea,
+html[data-kasa-theme] select { border-color: var(--line) !important; }
+
+/* Avans modülünün değişkenleri ve sert renkleri. */
+html[data-kasa-theme] .card,
+html[data-kasa-theme] .tabs,
+html[data-kasa-theme] .person-item,
+html[data-kasa-theme] .summary { background-color: color-mix(in srgb, var(--panel) 94%, transparent) !important; border-color: var(--line) !important; }
+html[data-kasa-theme] .tab-btn.active,
+html[data-kasa-theme] .primary { background: linear-gradient(135deg, var(--accent), var(--accent2)) !important; color: var(--accent-ink) !important; }
+html[data-kasa-theme] .success { background: var(--success) !important; }
+html[data-kasa-theme] .eyebrow { color: var(--accent) !important; }
+
