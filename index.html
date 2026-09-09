@@ -8,8 +8,8 @@
   <script>document.documentElement.dataset.kasaTheme = localStorage.getItem("kasaflow_theme") || "pembe-seker";</script>
   <link rel="manifest" href="/manifest.webmanifest" />
   <link rel="apple-touch-icon" href="/logo.png" />
-  <link rel="stylesheet" href="/cashier-themes.css?v=2.3" />
-  <link rel="stylesheet" href="/style.css?v=2.3" />
+  <link rel="stylesheet" href="/cashier-themes.css?v=2.3.2" />
+  <link rel="stylesheet" href="/style.css?v=2.3.2" />
 </head>
 <body>
   <div style="position:fixed;left:10px;bottom:10px;z-index:999999;background:#111827;color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:6px 10px;font:800 10px Arial;letter-spacing:.04em;pointer-events:none">MIGRATION TEST · PostgreSQL/JWT</div>
@@ -41,10 +41,11 @@
         <button class="module-button" data-view="siparis"><span>🛍️</span><b>Sipariş</b></button>
         <button class="module-button" data-view="garanti"><span>🛡️</span><b>Garanti</b></button>
         <button class="module-button" data-view="avans-maas"><span>💸</span><b>Avans & Maaş</b><i id="salaryNavBadge" class="nav-badge hidden">0</i></button>
+        <button class="module-button" data-view="anket"><span>⭐</span><b>Anket</b></button>
         <button class="module-button" data-view="ayarlar"><span>🎨</span><b>Ayarlar</b></button>
       </nav>
 
-      <div class="sidebar-footer"><span>KasaFlow Migration 2.3</span><small>Garage İstanbul · SchEAx & GPT</small></div>
+      <div class="sidebar-footer"><span>KasaFlow Migration 2.3.2</span><small>Garage İstanbul · SchEAx & GPT</small></div>
     </aside>
 
     <main class="workspace">
@@ -66,6 +67,14 @@
       <section id="moduleViewport" class="module-viewport">
         <div id="moduleLoading" class="module-loading"><span></span>Ekran hazırlanıyor…</div>
         <iframe id="moduleFrame" title="KasaFlow çalışma ekranı" allow="camera; microphone; clipboard-read; clipboard-write" loading="eager"></iframe>
+      </section>
+
+      <section id="surveyView" class="survey-view hidden">
+        <div class="survey-hero">
+          <div><p class="eyebrow">MÜŞTERİ MEMNUNİYETİ</p><h2>Anket Cevapları</h2><p>Müşterilerin gönderdiği puanları, yorumları ve geri dönüş taleplerini buradan takip et.</p></div>
+          <div class="survey-hero-icon">⭐</div>
+        </div>
+        <div id="customerSurveyPanel"><div class="survey-empty">Anket cevapları yükleniyor…</div></div>
       </section>
 
       <section id="settingsView" class="settings-view hidden">
@@ -97,6 +106,6 @@
   </div>
 
   <div id="toast" class="toast" aria-live="polite"></div>
-  <script src="/app-migration-v2.3.js"></script>
+  <script src="/app-migration-v2.3.js?v=2.3.2"></script>
 </body>
 </html>

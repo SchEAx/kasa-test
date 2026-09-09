@@ -1,4 +1,4 @@
 {
-  "version": "2.3",
-  "build": "KASAFLOW-MIGRATION-TEST-POSTGRES-JWT"
+  "version": "2.3.2",
+  "build": "KASAFLOW-MIGRATION-TEST-POSTGRES-JWT-SURVEY-ANSWERS"
 }

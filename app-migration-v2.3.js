@@ -10,6 +10,7 @@ const VIEWS = {
   siparis: { title: "Sipariş", kind: "vehicle", tab: "siparis" },
   garanti: { title: "Garanti", kind: "vehicle", tab: "garanti" },
   "avans-maas": { title: "Avans & Maaş", kind: "payroll" },
+  anket: { title: "Anket", kind: "survey" },
   ayarlar: { title: "Ayarlar", kind: "settings" }
 };
 const THEMES = new Set(["pembe-seker", "sakiz", "lavanta", "tropik", "mandalina", "gece-pembe"]);
@@ -21,6 +22,7 @@ const PAYROLL_URL = "/modules/avans-maas/index.html?embed=kasa";
 const frame = document.getElementById("moduleFrame");
 const viewport = document.getElementById("moduleViewport");
 const settingsView = document.getElementById("settingsView");
+const surveyView = document.getElementById("surveyView");
 const loading = document.getElementById("moduleLoading");
 const title = document.getElementById("viewTitle");
 const toast = document.getElementById("toast");
@@ -183,6 +185,137 @@ function applyTheme(theme, { save = true, notify = true } = {}) {
 function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>'"]/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;" })[character]);
 }
+
+
+function formatSurveyDate(value) {
+  if (!value) return "-";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return escapeHtml(String(value));
+  return new Intl.DateTimeFormat("tr-TR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  }).format(date);
+}
+
+function customerSurveyRowAverage(row) {
+  const values = [1, 2, 3, 4, 5, 6, 7, 8]
+    .map((i) => Number(row?.[`q${i}`] || 0))
+    .filter((value) => Number.isFinite(value) && value > 0);
+  if (!values.length) return "0.00";
+  return (values.reduce((sum, value) => sum + value, 0) / values.length).toFixed(2);
+}
+
+async function loadCustomerSurveyStats() {
+  const box = document.getElementById("customerSurveyPanel");
+  if (!box) return;
+  box.innerHTML = `<div class="survey-empty">Anket cevapları yükleniyor…</div>`;
+
+  try {
+    const payload = await apiFetch("/api/customer-surveys?limit=500&offset=0");
+    const rows = Array.isArray(payload?.surveys) ? payload.surveys : [];
+    const totalSurveyCount = Number(payload?.count ?? rows.length);
+    const scoreKeys = ["q1", "q2", "q3", "q4", "q5", "q6", "q7", "q8"];
+    const numericScores = (row) => scoreKeys
+      .map((key) => Number(row?.[key] || 0))
+      .filter((value) => Number.isFinite(value) && value > 0);
+    const avg = (values) => values.length
+      ? (values.reduce((sum, value) => sum + Number(value || 0), 0) / values.length).toFixed(2)
+      : "0.00";
+
+    const allScores = rows.flatMap(numericScores);
+    const problemRows = rows.filter((row) => numericScores(row).some((value) => value <= 2));
+    const contactRows = rows.filter((row) => row.contact_allowed && row.phone);
+    const questionNames = [
+      "Karşılama biçimi ve nezaket",
+      "İhtiyaçların anlaşılması / bilgilendirme",
+      "Montaj kalitesi ve işçilik",
+      "Söz verilen zamanda teslim",
+      "Teslimat anındaki temizlik",
+      "Fiyat / Performans",
+      "Tavsiye etme olasılığı",
+      "Muhatap bulabilme"
+    ];
+
+    const averagesHtml = questionNames.map((name, index) => {
+      const key = `q${index + 1}`;
+      const values = rows
+        .map((row) => Number(row?.[key] || 0))
+        .filter((value) => Number.isFinite(value) && value > 0);
+      return `<tr><td><span class="survey-q-code">Q${index + 1}</span>${escapeHtml(name)}</td><td><strong>${avg(values)}</strong> / 5</td></tr>`;
+    }).join("");
+
+    const rawRowsHtml = rows.map((row) => {
+      const scores = numericScores(row);
+      const low = scores.some((value) => value <= 2);
+      const comment = String(row?.suggestion || "").trim();
+      const contact = row?.contact_allowed && row?.phone
+        ? `✅ ${escapeHtml(String(row.phone))}`
+        : "Anonim";
+      const scoreCells = scoreKeys.map((key) => `<td>${escapeHtml(String(row?.[key] ?? "-"))}</td>`).join("");
+      return `<tr class="${low ? "survey-row-low" : ""}">
+        <td><strong>#${escapeHtml(String(row?.id || "-"))}</strong></td>
+        <td>${formatSurveyDate(row?.created_at)}</td>
+        <td><strong>${customerSurveyRowAverage(row)}</strong></td>
+        ${scoreCells}
+        <td class="survey-table-comment" title="${escapeHtml(comment)}">${comment ? escapeHtml(comment) : "-"}</td>
+        <td>${contact}</td>
+      </tr>`;
+    }).join("") || `<tr><td colspan="13" class="survey-empty">Henüz anket cevabı yok.</td></tr>`;
+
+    const commentsHtml = rows
+      .filter((row) => String(row?.suggestion || "").trim() || (row?.contact_allowed && row?.phone))
+      .slice(0, 30)
+      .map((row) => {
+        const scores = numericScores(row);
+        const low = scores.some((value) => value <= 2);
+        const comment = String(row?.suggestion || "").trim();
+        return `<article class="survey-comment ${low ? "danger" : ""}">
+          <div class="survey-comment-head">
+            <strong>#${escapeHtml(String(row?.id || "-"))} · ${formatSurveyDate(row?.created_at)}</strong>
+            <span>Ort. ${avg(scores)} / 5 ${low ? "⚠️" : ""}</span>
+          </div>
+          <p>${comment ? escapeHtml(comment) : "Yorum yazılmamış."}</p>
+          <small>${row?.contact_allowed && row?.phone ? `Geri dönüş izni: ${escapeHtml(String(row.phone))}` : "Anonim değerlendirme"}</small>
+        </article>`;
+      }).join("") || `<div class="survey-empty">Henüz yorum yok.</div>`;
+
+    box.innerHTML = `
+      <div class="survey-stats">
+        <article><b>${totalSurveyCount}</b><span>Toplam Anket</span></article>
+        <article><b>${avg(allScores)}</b><span>Genel Ortalama</span></article>
+        <article><b>${problemRows.length}</b><span>Düşük Puanlı</span></article>
+        <article><b>${contactRows.length}</b><span>Geri Dönüş İsteyen</span></article>
+      </div>
+
+      <section class="survey-card">
+        <div class="survey-section-head"><div><p class="eyebrow">PUAN ANALİZİ</p><h2>Kriter Ortalamaları</h2></div></div>
+        <div class="survey-table-scroll"><table class="survey-table survey-average-table"><thead><tr><th>Kriter</th><th>Ortalama</th></tr></thead><tbody>${averagesHtml}</tbody></table></div>
+      </section>
+
+      <section class="survey-card">
+        <div class="survey-section-head">
+          <div><p class="eyebrow">MÜŞTERİ CEVAPLARI</p><h2>Tüm Anket Kayıtları</h2><small>Son ${rows.length} kayıt gösteriliyor.</small></div>
+          <button class="survey-refresh-button" type="button" onclick="loadCustomerSurveyStats()">↻ Yenile</button>
+        </div>
+        <div class="survey-table-scroll"><table class="survey-table survey-record-table"><thead><tr>
+          <th>ID</th><th>Tarih</th><th>Ort.</th><th>Q1</th><th>Q2</th><th>Q3</th><th>Q4</th><th>Q5</th><th>Q6</th><th>Q7</th><th>Q8</th><th>Yorum</th><th>İletişim</th>
+        </tr></thead><tbody>${rawRowsHtml}</tbody></table></div>
+      </section>
+
+      <section class="survey-card">
+        <div class="survey-section-head"><div><p class="eyebrow">YORUMLAR</p><h2>Son Yorumlar</h2></div></div>
+        <div class="survey-comments">${commentsHtml}</div>
+      </section>
+    `;
+  } catch (error) {
+    console.error("KasaFlow survey load error:", error);
+    box.innerHTML = `<div class="survey-empty survey-error">Anket cevapları alınamadı: ${escapeHtml(error?.message || error)}</div>`;
+  }
+}
+window.loadCustomerSurveyStats = loadCustomerSurveyStats;
 
 function usernameSlug(value) {
   return authEmailForUsername(value).split("@")[0];
@@ -375,10 +508,13 @@ function openView(key, pushState = true) {
   title.textContent = view.title;
   setActiveButton(activeView);
   const isSettings = view.kind === "settings";
-  viewport.classList.toggle("hidden", isSettings);
+  const isSurvey = view.kind === "survey";
+  viewport.classList.toggle("hidden", isSettings || isSurvey);
   settingsView.classList.toggle("hidden", !isSettings);
+  surveyView?.classList.toggle("hidden", !isSurvey);
   document.getElementById("refreshViewButton").classList.toggle("hidden", isSettings);
   if (isSettings && currentProfile?.role === "admin") loadStaffManagement();
+  if (isSurvey) loadCustomerSurveyStats();
 
   if (view.kind === "vehicle") {
     pendingVehicleTab = view.tab;
@@ -417,6 +553,10 @@ frame.addEventListener("load", () => {
 });
 
 document.getElementById("refreshViewButton").addEventListener("click", () => {
+  if (activeView === "anket") {
+    loadCustomerSurveyStats();
+    return;
+  }
   if (!frame.src) return;
   loading.classList.remove("hidden");
   frame.contentWindow.location.reload();
