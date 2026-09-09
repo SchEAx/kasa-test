@@ -3,6 +3,10 @@ const MIGRATION_API_BASE = "https://api.scheax.com.tr/migration-test";
 const MIGRATION_TOKEN_KEY = "garage_migration_test_jwt_v1";
 const VAPID_PUBLIC_KEY = "BAi5RqXIHt50gvHTCOLT0XJxzW6f8OB_pYt_JN4nOKIIP8Cj9KkUu44hsLRZKLxxOKrZVdPFX_c5qc141bJt4Hc";
 
+const KASAFLOW_APP_VERSION = "2.3.3";
+const KASAFLOW_VERSION_KEY = "kasaflow_app_version";
+
+
 const VIEWS = {
   "hizli-kayit": { title: "Hızlı Kayıt", kind: "vehicle", tab: "hizliKayit" },
   kayitlar: { title: "Kayıtlar", kind: "vehicle", tab: "liste" },
@@ -64,6 +68,87 @@ async function apiFetch(path, options = {}) {
   }
   if (!response.ok || payload?.status === "error") throw new Error(payload?.message || `API hatası (${response.status})`);
   return payload;
+}
+
+function showKasaFlowUpdateNotice(newVersion) {
+  let notice = document.getElementById("kasaflowUpdateNotice");
+  if (notice) {
+    const versionNode = notice.querySelector("[data-update-version]");
+    if (versionNode) versionNode.textContent = String(newVersion || "");
+    return;
+  }
+
+  notice = document.createElement("div");
+  notice.id = "kasaflowUpdateNotice";
+  notice.className = "kasaflow-update-notice";
+  notice.innerHTML = `
+    <div class="kasaflow-update-copy">
+      <strong>⚡ Yeni sürüm hazır</strong>
+      <span data-update-version>${String(newVersion || "")}</span>
+    </div>
+    <button type="button" id="kasaflowUpdateNowBtn">Güncelle</button>
+  `;
+
+  let updateStarted = false;
+  notice.querySelector("#kasaflowUpdateNowBtn")?.addEventListener("click", async () => {
+    if (updateStarted) return;
+    updateStarted = true;
+    notice.classList.add("is-updating");
+    notice.innerHTML = `<strong>⚡ Güncelleniyor…</strong>`;
+
+    try {
+      if ("caches" in window) {
+        const names = await caches.keys();
+        await Promise.all(names.map((name) => caches.delete(name)));
+      }
+      if ("serviceWorker" in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map((reg) => reg.unregister()));
+      }
+      localStorage.setItem(KASAFLOW_VERSION_KEY, String(newVersion || Date.now()));
+    } catch (err) {
+      console.warn("KasaFlow güncelleme temizliği tamamlanamadı:", err);
+    }
+
+    const target = new URL(window.location.href);
+    target.searchParams.set("v", String(newVersion || Date.now()));
+    target.searchParams.set("_", String(Date.now()));
+    window.location.replace(target.toString());
+  }, { once: true });
+
+  document.body.appendChild(notice);
+  if (typeof showToast === "function") showToast("Yeni KasaFlow sürümü mevcut ⚡ Güncelle butonuna basabilirsin.");
+}
+
+async function checkKasaFlowVersion() {
+  try {
+    const response = await fetch(`/version.json?_=${Date.now()}`, { cache: "no-store" });
+    if (!response.ok) return;
+
+    const data = await response.json();
+    const remoteVersion = String(data?.version || "").trim();
+    if (!remoteVersion) return;
+
+    let localVersion = "";
+    try { localVersion = String(localStorage.getItem(KASAFLOW_VERSION_KEY) || "").trim(); } catch {}
+
+    if (!localVersion) {
+      try { localStorage.setItem(KASAFLOW_VERSION_KEY, KASAFLOW_APP_VERSION); } catch {}
+      localVersion = KASAFLOW_APP_VERSION;
+    }
+
+    if (remoteVersion !== localVersion) showKasaFlowUpdateNotice(remoteVersion);
+  } catch (err) {
+    console.warn("KasaFlow sürüm kontrolü yapılamadı:", err);
+  }
+}
+
+function initKasaFlowUpdateChecker() {
+  checkKasaFlowVersion();
+  window.setInterval(checkKasaFlowVersion, 60 * 1000);
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) checkKasaFlowVersion();
+  });
 }
 
 async function cleanupLegacyKasaFlowCaches() {
@@ -622,7 +707,7 @@ document.getElementById("globalLogoutButton").addEventListener("click", async ()
   showLogin("Oturum kapatıldı.");
 });
 
-window.addEventListener("load", cleanupLegacyKasaFlowCaches);
+window.addEventListener("load", () => { cleanupLegacyKasaFlowCaches(); initKasaFlowUpdateChecker(); });
 
 
 
