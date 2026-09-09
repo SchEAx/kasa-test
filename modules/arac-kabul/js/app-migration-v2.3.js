@@ -3977,6 +3977,22 @@ function render() {
                               </button>
 
                               <button
+                                onclick="updateRecordStatus('${record.id}', 'Montaj Bitti')"
+                                ${state.statusUpdatingId === record.id ? "disabled" : ""}
+                                class="rounded-2xl px-4 py-2 text-sm transition ${
+                                  record.status === "Montaj Bitti"
+                                    ? "bg-green-500 text-black font-semibold"
+                                    : "bg-green-500/20 text-green-300 hover:bg-green-500/30"
+                                } ${state.statusUpdatingId === record.id ? "opacity-60 cursor-not-allowed" : ""}"
+                              >
+                                ${
+                                  state.statusUpdatingId === record.id && record.status === "Montaj Bitti"
+                                    ? "Kaydediliyor..."
+                                    : "Montaj Bitti"
+                                }
+                              </button>
+
+                              <button
                                 data-print="${record.id}"
                                 onclick="printReceipt('${record.id}')"
                                 class="rounded-2xl bg-zinc-700 px-4 py-2 text-sm text-white hover:bg-zinc-600"
