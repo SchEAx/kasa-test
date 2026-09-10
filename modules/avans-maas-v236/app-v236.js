@@ -1,3 +1,4 @@
+console.info("[KasaFlow Payroll] PostgreSQL API build 2.3.6");
 const MIGRATION_API_BASE = "https://api.scheax.com.tr/migration-test";
 const MIGRATION_TOKEN_KEY = "garage_migration_test_jwt_v1";
 
@@ -385,5 +386,4 @@ function bind() {
   togglePayFields(); setInterval(() => scheduleSalaryReminder(false), 5 * 60 * 1000);
 }
 
-if ("serviceWorker" in navigator) window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js?v=8").catch(console.warn));
 bind(); resetPersonForm(); loadAll();

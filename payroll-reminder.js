@@ -50,14 +50,25 @@
 
     const people = payload.people || [];
     const payments = payload.salary_payments || [];
-    const paidKeys = new Set(payments.map((row) => `${row.person_id}:${String(row.pay_period).slice(0, 10)}`));
+
+    function paymentExists(person, period) {
+      return payments.some((row) => {
+        if (String(row.person_id) !== String(person.id)) return false;
+        const paidPeriod = String(row.pay_period || "").slice(0, 10);
+        if ((person.pay_type || "monthly") === "weekly") {
+          return paidPeriod === String(period).slice(0, 10);
+        }
+        return paidPeriod.slice(0, 7) === String(period).slice(0, 7);
+      });
+    }
+
     const today = new Date();
     today.setHours(23, 59, 59, 999);
     const due = [];
 
     people.filter((person) => person.is_active !== false).forEach((person) => {
       dueDates(person, today).forEach((period) => {
-        if (!paidKeys.has(`${person.id}:${period}`)) due.push({ person, period });
+        if (!paymentExists(person, period)) due.push({ person, period });
       });
     });
 

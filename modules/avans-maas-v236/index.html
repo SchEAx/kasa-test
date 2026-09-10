@@ -7,14 +7,14 @@
   <title>KasaFlow | Avans & Maaş</title>
   <script>document.documentElement.dataset.kasaTheme = localStorage.getItem("kasaflow_theme") || "pembe-seker";</script>
   <link rel="manifest" href="manifest.webmanifest" />
-  <link rel="stylesheet" href="style.css?v=5" />
+  <link rel="stylesheet" href="style-v236.css?v=236" />
   <link rel="stylesheet" href="/cashier-themes.css?v=1.1.1" />
 </head>
 <body>
   <div class="page-shell">
     <header class="topbar">
       <div><p class="eyebrow">PERSONEL ÖDEMELERİ</p><h1>Avans & Maaş</h1><span id="todayText"></span></div>
-      <div class="top-actions"><button id="notifyBtn" class="ghost" type="button">🔔 Bildirim Aç</button><button id="syncBtn" class="ghost" type="button">↻ Yenile</button></div>
+      <div class="top-actions"><span class="payroll-build-badge">PostgreSQL API · 2.3.6</span><button id="notifyBtn" class="ghost" type="button">🔔 Bildirim Aç</button><button id="syncBtn" class="ghost" type="button">↻ Yenile</button></div>
     </header>
 
     <nav class="tabs" aria-label="Avans ve maaş bölümleri">
@@ -91,6 +91,6 @@
     </main>
   </div>
   <div id="toast" class="toast" aria-live="polite"></div>
-  <script src="app.js?v=8"></script>
+  <script src="app-v236.js?v=236"></script>
 </body>
 </html>
