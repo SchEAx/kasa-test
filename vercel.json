@@ -1,8 +1,4 @@
 {
   "cleanUrls": false,
-  "trailingSlash": false,
-  "crons": [
-    { "path": "/api/payroll-reminder", "schedule": "0 6 * * *" }
-  ]
+  "trailingSlash": false
 }
-

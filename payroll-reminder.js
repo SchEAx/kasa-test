@@ -1,10 +1,24 @@
 (function payrollReminder() {
-  const SUPABASE_URL = "https://cgcdsvbdkubntmrqutxl.supabase.co";
-  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNnY2RzdmJka3VibnRtcnF1dHhsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxMjIxNTQsImV4cCI6MjA5NzY5ODE1NH0.1QUhjyJyC9cm5vNpP3zDPhXHdUEb5xc9bicRPrLg-Rs";
-  if (!window.supabase) return;
-  const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  const API_BASE = "https://api.scheax.com.tr/migration-test";
+  const TOKEN_KEY = "garage_migration_test_jwt_v1";
   const pad = (value) => String(value).padStart(2, "0");
   const iso = (date) => `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+
+  function token() {
+    try { return localStorage.getItem(TOKEN_KEY) || ""; } catch { return ""; }
+  }
+
+  async function fetchPayroll() {
+    const jwt = token();
+    if (!jwt) return null;
+    const response = await fetch(`${API_BASE}/api/kasaflow/payroll`, {
+      headers: { Authorization: `Bearer ${jwt}` },
+      cache: "no-store"
+    });
+    if (!response.ok) return null;
+    const payload = await response.json().catch(() => null);
+    return payload?.status === "ok" ? payload : null;
+  }
 
   function dueDates(person, today) {
     const startText = person.salary_tracking_start || iso(today);
@@ -31,15 +45,17 @@
   }
 
   async function loadDuePayroll(forceNotification = false) {
-    const peopleResult = await client.from("avans_personel").select("*").order("name", { ascending: true });
-    if (peopleResult.error) return;
-    const paymentResult = await client.from("maas_odemeleri").select("person_id,pay_period");
-    const payments = paymentResult.error ? [] : (paymentResult.data || []);
-    const paidKeys = new Set(payments.map((row) => `${row.person_id}:${row.pay_period}`));
+    const payload = await fetchPayroll();
+    if (!payload) return;
+
+    const people = payload.people || [];
+    const payments = payload.salary_payments || [];
+    const paidKeys = new Set(payments.map((row) => `${row.person_id}:${String(row.pay_period).slice(0, 10)}`));
     const today = new Date();
     today.setHours(23, 59, 59, 999);
     const due = [];
-    (peopleResult.data || []).filter((person) => person.is_active !== false).forEach((person) => {
+
+    people.filter((person) => person.is_active !== false).forEach((person) => {
       dueDates(person, today).forEach((period) => {
         if (!paidKeys.has(`${person.id}:${period}`)) due.push({ person, period });
       });

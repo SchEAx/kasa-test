@@ -1,4 +1,4 @@
 {
-  "version": "2.3.3",
-  "build": "KASAFLOW-MIGRATION-TEST-POSTGRES-JWT-UPDATE-NOTICE"
+  "version": "2.3.4",
+  "build": "KASAFLOW-MIGRATION-TEST-POSTGRES-JWT-PAYROLL"
 }

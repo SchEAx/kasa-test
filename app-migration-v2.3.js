@@ -3,7 +3,7 @@ const MIGRATION_API_BASE = "https://api.scheax.com.tr/migration-test";
 const MIGRATION_TOKEN_KEY = "garage_migration_test_jwt_v1";
 const VAPID_PUBLIC_KEY = "BAi5RqXIHt50gvHTCOLT0XJxzW6f8OB_pYt_JN4nOKIIP8Cj9KkUu44hsLRZKLxxOKrZVdPFX_c5qc141bJt4Hc";
 
-const KASAFLOW_APP_VERSION = "2.3.3";
+const KASAFLOW_APP_VERSION = "2.3.4";
 const KASAFLOW_VERSION_KEY = "kasaflow_app_version";
 
 
@@ -224,6 +224,7 @@ function enterApp(profile) {
   document.getElementById("globalUserPill").classList.remove("hidden");
   document.getElementById("globalUserName").textContent = profile.name || profile.username || "Personel";
   document.getElementById("globalUserRole").textContent = roleLabel(profile.role);
+  try { window.dispatchEvent(new CustomEvent("kasaflow:check-payroll")); } catch {}
   if (!appStarted) {
     appStarted = true;
     const hashView = location.hash.replace("#", "");
