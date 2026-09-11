@@ -3,6 +3,35 @@
   const TOKEN_KEY = "garage_migration_test_jwt_v1";
   const pad = (value) => String(value).padStart(2, "0");
   const iso = (date) => `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+  const dateOnly = (value) => {
+    const match = String(value || "").trim().match(/^(\d{4}-\d{2}-\d{2})/);
+    return match ? match[1] : "";
+  };
+  let activeNotification = null;
+
+  async function closePayrollNotifications() {
+    try {
+      if (activeNotification?.close) activeNotification.close();
+    } catch (_) {}
+    activeNotification = null;
+
+    try {
+      if ("serviceWorker" in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        for (const reg of regs) {
+          if (typeof reg.getNotifications !== "function") continue;
+          const list = await reg.getNotifications();
+          list.forEach((notification) => {
+            if (["kasaflow-salary", "kasaflow-payroll"].includes(String(notification.tag || ""))) {
+              notification.close();
+            }
+          });
+        }
+      }
+    } catch (error) {
+      console.warn("Maaş bildirimi kapatılamadı", error);
+    }
+  }
 
   function token() {
     try { return localStorage.getItem(TOKEN_KEY) || ""; } catch { return ""; }
@@ -21,7 +50,7 @@
   }
 
   function dueDates(person, today) {
-    const startText = person.salary_tracking_start || iso(today);
+    const startText = dateOnly(person.salary_tracking_start) || iso(today);
     const start = new Date(`${startText}T12:00:00`);
     const result = [];
     if ((person.pay_type || "monthly") === "weekly") {
@@ -95,7 +124,7 @@
         if (registration?.showNotification) {
           await registration.showNotification("KasaFlow Maaş Hatırlatması", { body, icon: "/icons/icon-192.png", badge: "/icons/icon-192.png", tag: "kasaflow-salary", data: { url: "/#avans-maas" } });
         } else {
-          new Notification("KasaFlow Maaş Hatırlatması", { body, icon: "/icons/icon-192.png" });
+          activeNotification = new Notification("KasaFlow Maaş Hatırlatması", { body, icon: "/icons/icon-192.png" });
         }
         localStorage.setItem(sentKey, "1");
       } catch (error) {
@@ -104,6 +133,7 @@
     }
   }
 
+  window.addEventListener("kasaflow:close-payroll-notifications", closePayrollNotifications);
   window.addEventListener("garageflow:check-payroll", (event) => loadDuePayroll(event.detail?.force === true));
   window.addEventListener("kasaflow:check-payroll", (event) => loadDuePayroll(event.detail?.force === true));
   window.addEventListener("load", () => {

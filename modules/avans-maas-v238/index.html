@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#db2777" />
+  <title>KasaFlow | Avans & Maaş</title>
+  <script>document.documentElement.dataset.kasaTheme = localStorage.getItem("kasaflow_theme") || "pembe-seker";</script>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="style-v238.css?v=237" />
+  <link rel="stylesheet" href="/cashier-themes.css?v=1.1.1" />
+</head>
+<body>
+  <div class="page-shell">
+    <header class="topbar">
+      <div><p class="eyebrow">PERSONEL ÖDEMELERİ</p><h1>Avans & Maaş</h1><span id="todayText"></span></div>
+      <div class="top-actions"><span class="payroll-build-badge">PostgreSQL API · 2.3.8</span><button id="notifyBtn" class="ghost" type="button">🔔 Bildirim Aç</button><button id="syncBtn" class="ghost" type="button">↻ Yenile</button></div>
+    </header>
+
+    <nav class="tabs" aria-label="Avans ve maaş bölümleri">
+      <button class="tab-btn active" data-tab="tabPayroll" type="button">Avans & Maaş İşlemi</button>
+      <button class="tab-btn" data-tab="tabPeople" type="button">Personel Kaydetme</button>
+    </nav>
+
+    <main>
+      <section id="tabPayroll" class="tab-panel active">
+        <div id="migrationWarning" class="warning hidden"><strong>Maaş ödeme tablosu hazır değil.</strong><span>Avans & Maaş veri servisine ulaşılamıyor. Oturumu ve API bağlantısını kontrol et.</span></div>
+
+        <section class="card due-card">
+          <div class="section-head"><div><p class="eyebrow">AKSAMAYAN ÖDEME TAKİBİ</p><h2>Maaşı bekleyen personeller</h2></div><span id="dueCount" class="count-badge">0</span></div>
+          <div id="dueList" class="due-list"><p class="empty">Maaş bekleyen personel yok.</p></div>
+        </section>
+
+        <section class="card person-picker">
+          <label for="activePerson">İşlem yapılacak personel</label>
+          <select id="activePerson"></select>
+          <p>Personeli seçtiğinde açık avansları, maaş bilgisi ve kesilecek tutar aşağıya otomatik gelir.</p>
+        </section>
+
+        <div class="work-grid">
+          <section class="card">
+            <div class="section-head"><div><p class="eyebrow">1. ADIM</p><h2>Avans Girişi</h2></div></div>
+            <label>Avans miktarı<input id="advanceAmount" type="number" min="0" step="0.01" inputmode="decimal" placeholder="10.000" /></label>
+            <label>Açıklama<input id="advanceNote" placeholder="Örn: Nakit avans" /></label>
+            <label>Tarih<input id="advanceDate" type="date" /></label>
+            <button id="saveAdvanceBtn" class="primary full" type="button">Avansı Kaydet</button>
+          </section>
+
+          <section class="card salary-card">
+            <div class="section-head"><div><p class="eyebrow">2. ADIM</p><h2>Maaş & Avans Kesintisi</h2></div><span id="salaryStatusBadge" class="status-badge">Bekliyor</span></div>
+            <label>Maaş dönemi<select id="salaryDuePeriod"></select></label>
+            <div id="salaryCards" class="summary-grid"></div>
+            <p class="hint">Açık avanslar maaşı aşmayacak şekilde otomatik hazırlanır. İstersen kesilecek tutarı değiştirebilirsin; kalan avans sonraki maaşa devreder.</p>
+            <div class="table-wrap"><table><thead><tr><th>Kes</th><th>Avans</th><th>Kalan</th><th>Kesilecek</th></tr></thead><tbody id="deductionBody"></tbody></table></div>
+            <button id="markSalaryPaidBtn" class="success full salary-paid-button" type="button">✓ Maaşı Yattı</button>
+            <p id="salaryActionNote" class="action-note"></p>
+          </section>
+        </div>
+
+        <details class="card history-card">
+          <summary>Geçmiş kayıtları göster</summary>
+          <div class="history-toolbar"><label>Ay<input id="historyMonth" type="month" /></label></div>
+          <h3>Maaş Ödemeleri</h3>
+          <div class="table-wrap"><table><thead><tr><th>Dönem</th><th>Brüt Maaş</th><th>Avans Kesintisi</th><th>Yatan</th><th>Ödeme Zamanı</th></tr></thead><tbody id="salaryHistoryBody"></tbody></table></div>
+          <h3>Avans Geçmişi</h3>
+          <div id="historySummary" class="summary-grid compact"></div>
+          <div class="table-wrap"><table><thead><tr><th>Tarih</th><th>Açıklama</th><th>Avans</th><th>Kesilen</th><th>Kalan</th><th>Durum</th></tr></thead><tbody id="historyBody"></tbody></table></div>
+        </details>
+      </section>
+
+      <section id="tabPeople" class="tab-panel">
+        <div class="people-grid">
+          <section class="card">
+            <div class="section-head"><div><p class="eyebrow">PERSONEL TANIMI</p><h2>Personel Ekle / Düzenle</h2></div></div>
+            <label>Personel adı<input id="personName" placeholder="Ad Soyad" /></label>
+            <label>Maaş<input id="personSalary" type="number" min="0" step="0.01" inputmode="decimal" placeholder="30.000" /></label>
+            <label>Ödeme tipi<select id="personPayType"><option value="monthly">Aylık</option><option value="weekly">Haftalık</option></select></label>
+            <label id="monthlyField">Maaş günü<select id="personSalaryDay"></select></label>
+            <label id="weeklyField" class="hidden">Haftalık ödeme günü<select id="personSalaryWeekday"><option value="1">Pazartesi</option><option value="2">Salı</option><option value="3">Çarşamba</option><option value="4">Perşembe</option><option value="5">Cuma</option><option value="6">Cumartesi</option><option value="0">Pazar</option></select></label>
+            <label>Takip başlangıcı<input id="personTrackingStart" type="date" /><small>Bu tarihten önceki maaşlar için geçmiş borç çıkarılmaz.</small></label>
+            <label class="switch-row"><input id="personActive" type="checkbox" checked /><span>Personel aktif</span></label>
+            <button id="savePersonBtn" class="primary full" type="button">Personeli Kaydet</button>
+            <button id="cancelPersonEditBtn" class="ghost full hidden" type="button">Düzenlemeyi İptal Et</button>
+          </section>
+          <section class="card">
+            <div class="section-head"><div><p class="eyebrow">KAYITLI PERSONELLER</p><h2>Personel Listesi</h2></div></div>
+            <div id="personList" class="person-list"></div>
+          </section>
+        </div>
+      </section>
+    </main>
+  </div>
+  <div id="toast" class="toast" aria-live="polite"></div>
+  <script src="app-v238.js?v=238"></script>
+</body>
+</html>

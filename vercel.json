@@ -1,4 +1,36 @@
 {
   "cleanUrls": false,
-  "trailingSlash": false
+  "trailingSlash": false,
+  "headers": [
+    {
+      "source": "/version.json",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate, max-age=0" }
+      ]
+    },
+    {
+      "source": "/sw.js",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate, max-age=0" }
+      ]
+    },
+    {
+      "source": "/app-migration-v2.3.js",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, must-revalidate, max-age=0" }
+      ]
+    },
+    {
+      "source": "/payroll-reminder.js",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, must-revalidate, max-age=0" }
+      ]
+    },
+    {
+      "source": "/modules/avans-maas-v238/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, must-revalidate, max-age=0" }
+      ]
+    }
+  ]
 }

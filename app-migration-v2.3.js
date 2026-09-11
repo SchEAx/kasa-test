@@ -3,7 +3,7 @@ const MIGRATION_API_BASE = "https://api.scheax.com.tr/migration-test";
 const MIGRATION_TOKEN_KEY = "garage_migration_test_jwt_v1";
 const VAPID_PUBLIC_KEY = "BAi5RqXIHt50gvHTCOLT0XJxzW6f8OB_pYt_JN4nOKIIP8Cj9KkUu44hsLRZKLxxOKrZVdPFX_c5qc141bJt4Hc";
 
-const KASAFLOW_APP_VERSION = "2.3.7";
+const KASAFLOW_APP_VERSION = "2.3.8";
 const KASAFLOW_VERSION_KEY = "kasaflow_app_version";
 
 
@@ -21,7 +21,7 @@ const THEMES = new Set(["pembe-seker", "sakiz", "lavanta", "tropik", "mandalina"
 const ALL_VIEW_KEYS = Object.keys(VIEWS);
 const DEFAULT_STAFF_VIEWS = ALL_VIEW_KEYS.filter((key) => key !== "ayarlar");
 const VEHICLE_URL = "/modules/arac-kabul/index.html?embed=kasa";
-const PAYROLL_URL = "/modules/avans-maas-v237/index.html?embed=kasa&v=2.3.7";
+const PAYROLL_URL = "/modules/avans-maas-v238/index.html?embed=kasa&v=2.3.8";
 
 const frame = document.getElementById("moduleFrame");
 const viewport = document.getElementById("moduleViewport");
@@ -122,22 +122,31 @@ function showKasaFlowUpdateNotice(newVersion) {
 
 async function checkKasaFlowVersion() {
   try {
-    const response = await fetch(`/version.json?_=${Date.now()}`, { cache: "no-store" });
+    // Çalışan JS sürümü gerçeğin kaynağıdır. localStorage yalnızca bilgi amaçlıdır.
+    // Böylece Ctrl+F5 ile yeni JS geldikten sonra eski localStorage değeri yüzünden
+    // sahte bir "Güncelle" uyarısı oluşmaz.
+    try { localStorage.setItem(KASAFLOW_VERSION_KEY, KASAFLOW_APP_VERSION); } catch {}
+
+    const response = await fetch(
+      `/version.json?running=${encodeURIComponent(KASAFLOW_APP_VERSION)}&_=${Date.now()}`,
+      {
+        cache: "no-store",
+        headers: { "Cache-Control": "no-cache" }
+      }
+    );
     if (!response.ok) return;
 
     const data = await response.json();
     const remoteVersion = String(data?.version || "").trim();
     if (!remoteVersion) return;
 
-    let localVersion = "";
-    try { localVersion = String(localStorage.getItem(KASAFLOW_VERSION_KEY) || "").trim(); } catch {}
-
-    if (!localVersion) {
-      try { localStorage.setItem(KASAFLOW_VERSION_KEY, KASAFLOW_APP_VERSION); } catch {}
-      localVersion = KASAFLOW_APP_VERSION;
+    const notice = document.getElementById("kasaflowUpdateNotice");
+    if (remoteVersion === KASAFLOW_APP_VERSION) {
+      notice?.remove();
+      return;
     }
 
-    if (remoteVersion !== localVersion) showKasaFlowUpdateNotice(remoteVersion);
+    showKasaFlowUpdateNotice(remoteVersion);
   } catch (err) {
     console.warn("KasaFlow sürüm kontrolü yapılamadı:", err);
   }
@@ -145,10 +154,14 @@ async function checkKasaFlowVersion() {
 
 function initKasaFlowUpdateChecker() {
   checkKasaFlowVersion();
-  window.setInterval(checkKasaFlowVersion, 60 * 1000);
+  // Deployment sonrası butonun dakikalarca gecikmemesi için 10 sn kontrol.
+  window.setInterval(checkKasaFlowVersion, 10 * 1000);
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) checkKasaFlowVersion();
   });
+  window.addEventListener("focus", checkKasaFlowVersion);
+  window.addEventListener("pageshow", checkKasaFlowVersion);
+  window.addEventListener("online", checkKasaFlowVersion);
 }
 
 async function cleanupLegacyKasaFlowCaches() {
@@ -658,14 +671,56 @@ document.getElementById("notificationButton")?.addEventListener("click", () => {
   showToast("Avans & Maaş bildirim altyapısını ayrı migration turunda taşıyacağız.");
 });
 
+async function closeVisiblePayrollNotifications() {
+  try {
+    window.dispatchEvent(new CustomEvent("kasaflow:close-payroll-notifications"));
+  } catch (_) {}
+
+  try {
+    if ("serviceWorker" in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      for (const reg of regs) {
+        if (typeof reg.getNotifications !== "function") continue;
+        const notifications = await reg.getNotifications();
+        notifications.forEach((notification) => {
+          if (["kasaflow-salary", "kasaflow-payroll"].includes(String(notification.tag || ""))) {
+            notification.close();
+          }
+        });
+      }
+    }
+  } catch (error) {
+    console.warn("Maaş bildirimi kapatılamadı:", error);
+  }
+}
+
 window.addEventListener("message", (event) => {
   if (event.origin !== location.origin || !event.data) return;
   if (event.data.type === "kasaflow:ready") sendVehicleTab();
   if (event.data.type === "garageflow:toast" && event.data.message) showToast(event.data.message);
   if (event.data.type === "garageflow:payroll-due") {
+    const count = Number(event.data.count || 0);
+    const people = Array.isArray(event.data.people)
+      ? event.data.people.filter(Boolean)
+      : [];
+    const payrollAllowed = canOpenView("avans-maas");
     const badge = document.getElementById("salaryNavBadge");
-    badge.textContent = String(event.data.count || 0);
-    badge.classList.toggle("hidden", !event.data.count || !canOpenView("avans-maas"));
+    const alert = document.getElementById("salaryAlert");
+    const alertText = document.getElementById("salaryAlertText");
+
+    if (badge) {
+      badge.textContent = String(count);
+      badge.classList.toggle("hidden", !count || !payrollAllowed);
+    }
+
+    alert?.classList.toggle("hidden", !count || !payrollAllowed);
+    if (alertText && count) {
+      alertText.textContent = `Bu personel/personellerin maaşı var: ${people.join(", ")}. “Maaşı Yattı” denene kadar uyarı kapanmaz.`;
+    }
+  }
+  if (event.data.type === "garageflow:payroll-payment-saved") {
+    closeVisiblePayrollNotifications();
+    try { window.dispatchEvent(new CustomEvent("kasaflow:check-payroll")); } catch (_) {}
   }
   if (event.data.type === "garageflow:auth-required") showLogin("Oturum süresi doldu. Tekrar giriş yap.");
 });
