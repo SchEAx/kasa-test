@@ -3,7 +3,7 @@ const MIGRATION_API_BASE = "https://api.scheax.com.tr/migration-test";
 const MIGRATION_TOKEN_KEY = "garage_migration_test_jwt_v1";
 const VAPID_PUBLIC_KEY = "BAi5RqXIHt50gvHTCOLT0XJxzW6f8OB_pYt_JN4nOKIIP8Cj9KkUu44hsLRZKLxxOKrZVdPFX_c5qc141bJt4Hc";
 
-const KASAFLOW_APP_VERSION = "2.3.8";
+const KASAFLOW_APP_VERSION = "2.3.9";
 const KASAFLOW_VERSION_KEY = "kasaflow_app_version";
 
 
@@ -21,7 +21,7 @@ const THEMES = new Set(["pembe-seker", "sakiz", "lavanta", "tropik", "mandalina"
 const ALL_VIEW_KEYS = Object.keys(VIEWS);
 const DEFAULT_STAFF_VIEWS = ALL_VIEW_KEYS.filter((key) => key !== "ayarlar");
 const VEHICLE_URL = "/modules/arac-kabul/index.html?embed=kasa";
-const PAYROLL_URL = "/modules/avans-maas-v238/index.html?embed=kasa&v=2.3.8";
+const PAYROLL_URL = "/modules/avans-maas-v239/index.html?embed=kasa&v=2.3.9";
 
 const frame = document.getElementById("moduleFrame");
 const viewport = document.getElementById("moduleViewport");
@@ -30,6 +30,8 @@ const surveyView = document.getElementById("surveyView");
 const loading = document.getElementById("moduleLoading");
 const title = document.getElementById("viewTitle");
 const toast = document.getElementById("toast");
+const appVersionLabel = document.getElementById("appVersionLabel");
+if (appVersionLabel) appVersionLabel.textContent = `KasaFlow Migration ${KASAFLOW_APP_VERSION}`;
 let activeView = "hizli-kayit";
 let pendingVehicleTab = "hizliKayit";
 let appStarted = false;
